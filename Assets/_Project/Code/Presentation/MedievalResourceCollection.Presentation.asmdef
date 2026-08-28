@@ -1,0 +1,16 @@
+{
+  "name": "MedievalResourceCollection.Presentation",
+  "rootNamespace": "MedievalResourceCollection.Presentation",
+  "references": [
+    "MedievalResourceCollection.Gameplay"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}
