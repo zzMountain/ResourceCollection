@@ -36,12 +36,6 @@ namespace MedievalResourceCollection.Gameplay
             StopSpawning();
         }
 
-        private void OnDestroy()
-        {
-            foreach (Resource resource in _resources)
-                resource.Collected -= HandleResourceCollected;
-        }
-
         private IEnumerator SpawnResources()
         {
             while (enabled)
@@ -58,8 +52,15 @@ namespace MedievalResourceCollection.Gameplay
         private void CreateResource(Vector3 position)
         {
             Resource resource = Instantiate(_resourcePrefab, position, Quaternion.Euler(0f, 45f, 0f));
-            resource.Collected += HandleResourceCollected;
             _resources.Add(resource);
+        }
+
+        public void Remove(Resource resource)
+        {
+            if (_resources.Remove(resource) == false)
+                return;
+
+            Destroy(resource.gameObject);
         }
 
         private bool TryGetSpawnPosition(out Vector3 position)
@@ -93,13 +94,6 @@ namespace MedievalResourceCollection.Gameplay
             }
 
             return true;
-        }
-
-        private void HandleResourceCollected(Resource resource)
-        {
-            resource.Collected -= HandleResourceCollected;
-            _resources.Remove(resource);
-            Destroy(resource.gameObject);
         }
 
         private void StopSpawning()

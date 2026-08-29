@@ -47,7 +47,7 @@ namespace MedievalResourceCollection.Gameplay
 
                 foreach (Collider collider in colliders)
                 {
-                    if (collider.TryGetComponent(out Resource resource) && resource.IsAvailable)
+                    if (collider.TryGetComponent(out Resource resource))
                         _foundResources.Add(resource);
                 }
 

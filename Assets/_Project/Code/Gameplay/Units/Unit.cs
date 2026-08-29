@@ -12,9 +12,10 @@ namespace MedievalResourceCollection.Gameplay
         private Resource _resource;
         private bool _isDelivering;
 
-        public event Action<int> ResourceDelivered;
+        public event Action<Unit, Resource> AssignmentCancelled;
+        public event Action<Unit, Resource> ResourceDelivered;
 
-        public bool IsAvailable => _resource == null;
+        public bool CanAcceptResource => _resource == null;
 
         private void OnEnable()
         {
@@ -33,15 +34,14 @@ namespace MedievalResourceCollection.Gameplay
             _deliveryPoint = deliveryPoint;
         }
 
-        public bool TryAssign(Resource resource)
+        public void AssignResource(Resource resource)
         {
-            if (IsAvailable == false || resource.TryReserve(this) == false)
-                return false;
+            if (CanAcceptResource == false)
+                return;
 
             _resource = resource;
             _isDelivering = false;
             _mover.MoveTo(resource.transform.position);
-            return true;
         }
 
         public void CancelAssignment()
@@ -49,9 +49,14 @@ namespace MedievalResourceCollection.Gameplay
             if (_resource == null)
                 return;
 
-            _resource.TryRelease(this);
+            Resource cancelledResource = _resource;
+
+            if (_isDelivering)
+                cancelledResource.Detach();
+
             _resource = null;
             _isDelivering = false;
+            AssignmentCancelled?.Invoke(this, cancelledResource);
         }
 
         private void HandleDestinationReached()
@@ -70,12 +75,7 @@ namespace MedievalResourceCollection.Gameplay
 
         private void PickUpResource()
         {
-            if (_resource.TryPickUp(this, _carryPoint) == false)
-            {
-                CancelAssignment();
-                return;
-            }
-
+            _resource.AttachTo(_carryPoint);
             _isDelivering = true;
             _mover.MoveTo(_deliveryPoint.position);
         }
@@ -84,11 +84,9 @@ namespace MedievalResourceCollection.Gameplay
         {
             Resource deliveredResource = _resource;
 
-            if (deliveredResource.TryCollect(this, out int value))
-                ResourceDelivered?.Invoke(value);
-
             _resource = null;
             _isDelivering = false;
+            ResourceDelivered?.Invoke(this, deliveredResource);
         }
     }
 }
