@@ -8,14 +8,19 @@ namespace MedievalResourceCollection.Gameplay
         [SerializeField] private UnitMover _mover;
         [SerializeField] private Transform _carryPoint;
 
-        private Transform _deliveryPoint;
+        private Base _baseBeingBuilt;
+        private Base _owner;
         private Resource _resource;
         private bool _isDelivering;
+        private bool _isBuilding;
 
         public event Action<Unit, Resource> AssignmentCancelled;
+        public event Action<Unit, Base> BaseConstructionCompleted;
         public event Action<Unit, Resource> ResourceDelivered;
 
-        public bool CanAcceptResource => _resource == null;
+        public bool CanAcceptResource => _resource == null && _isBuilding == false;
+
+        public Base Owner => _owner;
 
         private void OnEnable()
         {
@@ -29,9 +34,9 @@ namespace MedievalResourceCollection.Gameplay
             CancelAssignment();
         }
 
-        public void Initialize(Transform deliveryPoint)
+        public void AssignToBase(Base resourceBase)
         {
-            _deliveryPoint = deliveryPoint;
+            _owner = resourceBase;
         }
 
         public void AssignResource(Resource resource)
@@ -42,6 +47,13 @@ namespace MedievalResourceCollection.Gameplay
             _resource = resource;
             _isDelivering = false;
             _mover.MoveTo(resource.transform.position);
+        }
+
+        public void BeginBaseConstruction(Base baseBeingBuilt)
+        {
+            _baseBeingBuilt = baseBeingBuilt;
+            _isBuilding = true;
+            _mover.MoveTo(baseBeingBuilt.transform.position);
         }
 
         public void CancelAssignment()
@@ -61,6 +73,12 @@ namespace MedievalResourceCollection.Gameplay
 
         private void HandleDestinationReached()
         {
+            if (_isBuilding)
+            {
+                CompleteBaseConstruction();
+                return;
+            }
+
             if (_resource == null)
                 return;
 
@@ -77,7 +95,7 @@ namespace MedievalResourceCollection.Gameplay
         {
             _resource.AttachTo(_carryPoint);
             _isDelivering = true;
-            _mover.MoveTo(_deliveryPoint.position);
+            _mover.MoveTo(_owner.DeliveryPoint.position);
         }
 
         private void DeliverResource()
@@ -87,6 +105,15 @@ namespace MedievalResourceCollection.Gameplay
             _resource = null;
             _isDelivering = false;
             ResourceDelivered?.Invoke(this, deliveredResource);
+        }
+
+        private void CompleteBaseConstruction()
+        {
+            Base completedBase = _baseBeingBuilt;
+
+            _baseBeingBuilt = null;
+            _isBuilding = false;
+            BaseConstructionCompleted?.Invoke(this, completedBase);
         }
     }
 }

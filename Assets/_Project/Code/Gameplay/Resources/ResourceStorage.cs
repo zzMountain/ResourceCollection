@@ -14,5 +14,15 @@ namespace MedievalResourceCollection.Gameplay
             Amount += value;
             AmountChanged?.Invoke(Amount);
         }
+
+        public bool TrySpend(int value)
+        {
+            if (Amount < value)
+                return false;
+
+            Amount -= value;
+            AmountChanged?.Invoke(Amount);
+            return true;
+        }
     }
 }

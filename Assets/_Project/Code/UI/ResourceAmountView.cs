@@ -27,7 +27,7 @@ namespace MedievalResourceCollection.UI
 
         private void ShowAmount(int amount)
         {
-            _text.text = $"Ресурсы: {amount}";
+            _text.text = $"Исходная база\nРесурсы: {amount}";
         }
     }
 }
